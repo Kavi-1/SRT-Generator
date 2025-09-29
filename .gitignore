@@ -3,6 +3,17 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# Virtual env
+.venv/
+
+# Outputs
+out/
+*.srt
+*.burned.mp4
+
+# macOS
+.DS_Store
+
 # C extensions
 *.so
 
