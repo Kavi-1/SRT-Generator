@@ -17,6 +17,10 @@ out/
 # C extensions
 *.so
 
+# my test samples
+*.mp4
+*.mp3s
+
 # Distribution / packaging
 .Python
 build/
