@@ -1,4 +1,5 @@
 from fastapi import FastAPI, UploadFile, File, Form
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 import shutil
 import os
@@ -7,6 +8,13 @@ from faster_whisper import WhisperModel
 from core.transcriber import write_srt
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 _model_cache = {}
 
