@@ -74,7 +74,7 @@ function App() {
       if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null }
       setElapsedMs(Math.round(performance.now() - start))
       if (xhr.status === 200) {
-        xhr.response.text().then((txt: string) => { setSrt(txt); setStatus('Done ✅') })
+        xhr.response.text().then((txt: string) => { setSrt(txt); setStatus('Done!') })
       } else {
         setError(`Error ${xhr.status}`); setStatus('Failed')
       }
@@ -146,7 +146,10 @@ function App() {
                     disabled={loading}
                   >
                     <MenuItem value="tiny">Tiny</MenuItem>
+                    <MenuItem value="base">Base</MenuItem>
                     <MenuItem value="small">Small</MenuItem>
+                    <MenuItem value="medium">Medium</MenuItem>
+                    <MenuItem value="large">Large</MenuItem>
                   </Select>
                 </FormControl>
 

@@ -84,7 +84,7 @@ def generate_srt(
 
 @app.get("/")
 def root():
-    return {"message": "SRT Generator API. POST /generate_srt/ with a video file."}
+    return {"message": "SRT Generator API is online!"}
 
 
 @app.get("/healthz")
