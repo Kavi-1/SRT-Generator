@@ -17,7 +17,7 @@ import {
   Box,
 } from '@mui/material'
 
-const VITE_API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000')
+const BACKEND_BASE = (import.meta.env.BACKEND_BASE || 'http://localhost:8000')
 const normalizeBase = (url: string) => url.replace(/\/$/, '')
 
 const theme = createTheme({
@@ -59,7 +59,7 @@ function App() {
     }, 200)
 
     const xhr = new XMLHttpRequest()
-    xhr.open('POST', `${normalizeBase(VITE_API_URL)}/generate_srt/`)
+    xhr.open('POST', `${normalizeBase(BACKEND_BASE)}/generate_srt/`)
     xhr.responseType = 'blob'
 
     xhr.upload.onprogress = ev => {
@@ -101,7 +101,7 @@ function App() {
   useEffect(() => {
     let cancelled = false
     setStatus('Checking API…')
-    fetch(normalizeBase(VITE_API_URL) + '/')
+    fetch(normalizeBase(BACKEND_BASE) + '/')
       .then(r => (r.ok ? r.json() : Promise.reject(r.status)))
       .then(data => { if (!cancelled) setStatus(data.message || 'API ready') })
       .catch(() => { if (!cancelled) setStatus('API unreachable') })
