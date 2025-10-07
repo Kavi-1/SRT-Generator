@@ -17,7 +17,7 @@ import {
   Box,
 } from '@mui/material'
 
-const BACKEND_BASE = (import.meta.env.BACKEND_BASE || 'http://localhost:8000')
+const BACKEND_BASE = (import.meta.env.VITE_BACKEND_BASE || 'http://localhost:8000')
 const normalizeBase = (url: string) => url.replace(/\/$/, '')
 
 const theme = createTheme({
