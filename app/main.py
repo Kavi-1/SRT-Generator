@@ -20,7 +20,7 @@ else:
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "https://srt-generator-two.vercel.app",
-        "https://d3umgeg3bslilg.cloudfront.net",
+        "https://d930xtaij0qs7.cloudfront.net",
     ]
 
 if cloudfront_domain_env:
