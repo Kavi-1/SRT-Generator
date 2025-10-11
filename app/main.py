@@ -10,35 +10,12 @@ from core.transcriber import write_srt
 
 app = FastAPI()
 
-_origins_env = os.getenv("ALLOWED_ORIGINS")
-cloudfront_domain_env = os.getenv("CLOUDFRONT_DOMAIN")
-
-if _origins_env:
-    allowed_origins = [o.strip().rstrip('/') for o in _origins_env.split(',') if o.strip()]
-else:
-    allowed_origins = [
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "https://srt-generator-two.vercel.app",
-        "https://d930xtaij0qs7.cloudfront.net",
-    ]
-
-if cloudfront_domain_env:
-    cf_url = cloudfront_domain_env.strip()
-    if cf_url and not cf_url.startswith('http'):
-        cf_url = 'https://' + cf_url
-    cf_url = cf_url.rstrip('/')
-    allowed_origins.append(cf_url)
-
-
-seen = set()
-_deduped = []
-for o in allowed_origins:
-    if o not in seen:
-        seen.add(o)
-        _deduped.append(o)
-allowed_origins = _deduped
-
+allowed_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://srt-generator-two.vercel.app",
+    "https://d930xtaij0qs7.cloudfront.net",
+]
 
 app.add_middleware(
     CORSMiddleware,
