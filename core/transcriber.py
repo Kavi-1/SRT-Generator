@@ -10,8 +10,7 @@ def wrap_lines(text: str, width: int = 42, max_lines: int = 2) -> str:
     text = " ".join((text or "").strip().split())
     if not text:
         return ""
-    lines = textwrap.wrap(text, width=width)
-    return "\n".join(lines[:max_lines]) if lines else ""
+    return "\n".join(textwrap.wrap(text, width=width))
 
 def transcribe(video_path: str, model_size: str = "small", device: str = "cpu"):
     """transcribe with faster-whisper"""
@@ -26,14 +25,12 @@ def transcribe(video_path: str, model_size: str = "small", device: str = "cpu"):
 
 def write_srt(segments, srt_path: str, width: int = 42, max_lines: int = 2):
     """write segments into SRT file"""
-    subs, idx = [], 1
-    for seg in segments:
+    subs = []
+    for idx, seg in enumerate(segments, 1):
         start = timedelta(seconds=max(float(seg.start), 0.0))
         end = timedelta(seconds=max(float(seg.end), 0.0))
-        text = wrap_lines(getattr(seg, "text", ""), width=width, max_lines=max_lines)
-        if not text:
-            continue
-        subs.append(srt.Subtitle(index=idx, start=start, end=end, content=text))
-        idx += 1
+        text = wrap_lines(getattr(seg, "text", ""), width=width)
+        if text:
+            subs.append(srt.Subtitle(index=idx, start=start, end=end, content=text))
     Path(srt_path).write_text(srt.compose(subs), encoding="utf-8")
     print(f"Wrote SRT: {srt_path} ({len(subs)} captions)")
