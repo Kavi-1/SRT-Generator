@@ -1,7 +1,7 @@
 # SRT-Generator
 FastAPI + faster-whisper subtitle generator with a modern React frontend. Upload a video, select model/device, and generate SRT subtitles easily.
 
-[https://srt-generator-two.vercel.app/](https://srt-generator-two.vercel.app/)
+[https://srt-generator-kavi.vercel.app/](https://srt-generator-kavi.vercel.app/)
 
 ## Motivation
 I frequently edit videos in Adobe After Effects, but it lacks a built-in feature to automatically 
