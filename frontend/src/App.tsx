@@ -16,6 +16,7 @@ import {
   Alert,
   Box,
 } from '@mui/material'
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 const BACKEND_BASE = (import.meta.env.VITE_BACKEND_BASE || 'http://localhost:8000')
 const normalizeBase = (url: string) => url.replace(/\/$/, '')
@@ -36,12 +37,15 @@ function App() {
   const [status, setStatus] = useState('')
   const [elapsedMs, setElapsedMs] = useState(0)
   const timerRef = useRef<number | null>(null)
+  const fontStyle = { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }
 
-  const reset = () => { setSrt(''); setError(''); setProgress(0); setStatus(''); setElapsedMs(0) }
+  const reset = () => { setSrt(''); setError(''); setProgress(0); setElapsedMs(0) }
 
   const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFile(e.target.files?.[0] || null)
     reset()
+    // setStatus(`${e.target.files?.[0]?.name}`)
+    setStatus('File selected')
   }
 
   const upload = () => {
@@ -104,7 +108,7 @@ function App() {
     fetch(normalizeBase(BACKEND_BASE) + '/')
       .then(r => (r.ok ? r.json() : Promise.reject(r.status)))
       .then(data => { if (!cancelled) setStatus(data.message || 'API ready') })
-      .catch(() => { if (!cancelled) setStatus('API unreachable') })
+      .catch(() => { if (!cancelled) setStatus('API offline') })
     return () => { cancelled = true }
   }, [])
 
@@ -113,7 +117,7 @@ function App() {
       <CssBaseline />
       <div className="min-h-dvh w-screen grid place-items-center">
         <Container maxWidth="md">
-          <Paper elevation={6} sx={{ p: { xs: 3, md: 5 }, borderRadius: 3 }}>
+          <Paper elevation={6} sx={{ p: { xs: 3, md: 5 }, borderRadius: 2, backgroundColor: '#f5f5f5' }}>
             <Stack spacing={2} alignItems="center" textAlign="center">
               <Box>
                 <Typography variant="h4" fontWeight={600}>SRT Generator</Typography>
@@ -175,21 +179,16 @@ function App() {
                   >
                     {loading ? 'Transcribing…' : 'Generate'}
                   </Button>
-                  <Button
-                    variant="outlined"
-                    onClick={download}
-                    disabled={!srt}
-                  >
-                    Download
-                  </Button>
                 </Stack>
               </Stack>
+
+              {file && <Typography sx={fontStyle}>{file.name}</Typography>}
 
               {/* Status */}
               <Typography
                 variant="caption"
                 color="text.secondary"
-                sx={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}
+                sx={fontStyle}
               >
                 Status: {status}{elapsedMs > 0 && <>&nbsp;{(elapsedMs / 1000).toFixed(1)}s</>}
               </Typography>
@@ -208,23 +207,33 @@ function App() {
 
               {/* Preview of SRT file */}
               {srt && (
-                <Box
-                  component="pre"
-                  sx={{
-                    width: '100%',
-                    maxHeight: 420,
-                    overflow: 'auto',
-                    p: 2,
-                    bgcolor: '#0f172a',
-                    color: '#e2e8f0',
-                    textAlign: 'left',
-                    borderRadius: 1.5,
-                    fontSize: 12,
-                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                  }}
-                >
-                  {srt}
-                </Box>
+                <>
+                  <Button
+                    variant="outlined"
+                    onClick={download}
+                    disabled={!srt}
+                    startIcon={<FileDownloadIcon sx={{ mr: -0.75 }} />}
+                  >
+                    Download
+                  </Button>
+                  <Box
+                    component="pre"
+                    sx={{
+                      width: '100%',
+                      maxHeight: 420,
+                      overflow: 'auto',
+                      p: 2,
+                      bgcolor: '#0f172a',
+                      color: '#e2e8f0',
+                      textAlign: 'left',
+                      borderRadius: 1.5,
+                      fontSize: 12,
+                      ...fontStyle,
+                    }}
+                  >
+                    {srt}
+                  </Box>
+                </>
               )}
             </Stack>
           </Paper>
