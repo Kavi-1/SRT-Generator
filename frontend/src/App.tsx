@@ -14,8 +14,11 @@ import {
   MenuItem,
   LinearProgress,
   Alert,
+  Snackbar,
   Box,
 } from '@mui/material'
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 const BACKEND_BASE = (import.meta.env.VITE_BACKEND_BASE || 'http://localhost:8000')
 const normalizeBase = (url: string) => url.replace(/\/$/, '')
@@ -27,21 +30,53 @@ const theme = createTheme({
 
 function App() {
   const [file, setFile] = useState<File | null>(null)
+  const [dragActive, setDragActive] = useState(false)
   const [model, setModel] = useState('tiny')
   const [device, setDevice] = useState<'cpu' | 'cuda'>('cpu')
   const [progress, setProgress] = useState(0)
   const [srt, setSrt] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [snackbarOpen, setSnackbarOpen] = useState(false)
+  const [snackbarMsg, setSnackbarMsg] = useState('')
+  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success')
   const [status, setStatus] = useState('')
   const [elapsedMs, setElapsedMs] = useState(0)
   const timerRef = useRef<number | null>(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
+  const fontStyle = { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }
 
-  const reset = () => { setSrt(''); setError(''); setProgress(0); setStatus(''); setElapsedMs(0) }
+  const reset = () => { setSrt(''); setError(''); setProgress(0); setElapsedMs(0) }
 
   const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFile(e.target.files?.[0] || null)
     reset()
+    // setStatus(`${e.target.files?.[0]?.name}`)
+    setStatus('File selected')
+  }
+
+  const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragActive(false)
+    const f = e.dataTransfer?.files?.[0]
+    if (f) {
+      setFile(f)
+      reset()
+      setStatus('File selected')
+    }
+  }
+
+  const onDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragActive(true)
+  }
+
+  const onDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragActive(false)
   }
 
   const upload = () => {
@@ -98,27 +133,51 @@ function App() {
     URL.revokeObjectURL(url)
   }
 
+  const copySrt = async () => {
+    if (!srt) return
+    try {
+      await navigator.clipboard.writeText(srt)
+      setSnackbarMsg('Copied to clipboard')
+      setSnackbarSeverity('success')
+      setSnackbarOpen(true)
+    } catch (err) {
+      setSnackbarMsg('Failed to copy')
+      setSnackbarSeverity('error')
+      setSnackbarOpen(true)
+    }
+  }
+
   useEffect(() => {
     let cancelled = false
     setStatus('Checking API…')
     fetch(normalizeBase(BACKEND_BASE) + '/')
       .then(r => (r.ok ? r.json() : Promise.reject(r.status)))
       .then(data => { if (!cancelled) setStatus(data.message || 'API ready') })
-      .catch(() => { if (!cancelled) setStatus('API unreachable') })
+      .catch(() => { if (!cancelled) setStatus('API offline') })
     return () => { cancelled = true }
   }, [])
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <div className="min-h-dvh w-screen grid place-items-center">
+      <div className="min-h-dvh w-screen grid place-items-center"
+        style={{ background: 'linear-gradient(135deg, #1A2980 0%, #26D0CE 100%)' }}>
         <Container maxWidth="md">
-          <Paper elevation={6} sx={{ p: { xs: 3, md: 5 }, borderRadius: 3 }}>
+          <Paper elevation={6}
+            sx=
+            {{
+              p: { xs: 3, md: 5 },
+              borderRadius: 2,
+              backgroundColor: 'rgba(255, 255, 255, 0.75)',
+              backdropFilter: 'blur(8px)',
+              boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
+            }}>
             <Stack spacing={2} alignItems="center" textAlign="center">
               <Box>
                 <Typography variant="h4" fontWeight={600}>SRT Generator</Typography>
                 <Typography variant="body2" color="text.secondary">
-                  FastAPI + faster-whisper subtitle creator
+                  {/* FastAPI + faster-whisper subtitle creator */}
+                  Auto-generate subtitles using faster-whisper AI.
                 </Typography>
               </Box>
 
@@ -130,11 +189,44 @@ function App() {
                 justifyContent="center"
                 flexWrap="wrap"
               >
-                {/* File input*/}
-                <Button variant="contained" component="label">
-                  Choose File
-                  <input hidden type="file" accept="video/*" onChange={onFile} />
-                </Button>
+                {/* drag/drop file*/}
+                <Box
+                  sx={{
+                    border: theme => `2px dashed ${theme.palette.divider}`,
+                    p: 2,
+                    px: 3,
+                    borderRadius: 2,
+                    cursor: 'pointer',
+                    bgcolor: dragActive ? 'grey.100' : 'transparent',
+                    minWidth: 220,
+                    textAlign: 'center',
+                  }}
+                  onClick={() => inputRef.current?.click()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      inputRef.current?.click()
+                    }
+                  }}
+                  onDrop={onDrop}
+                  onDragOver={onDragOver}
+                  onDragLeave={onDragLeave}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <input
+                    ref={inputRef}
+                    style={{ display: 'none' }}
+                    type="file"
+                    accept="video/*"
+                    onChange={onFile}
+                  />
+                  {/* <Typography variant="button">{dragActive ? 'Drop file here' : 'Choose or drop a file'}</Typography> */}
+                  {/* <Typography variant="caption" display="block" color="text.secondary">Accepts video files</Typography> */}
+                  {file ? <Typography sx={fontStyle}>{file.name}</Typography>
+                    : <><Typography variant="button">{dragActive ? 'Drop file here' : 'Choose or drop a file'}</Typography>
+                      <Typography variant="caption" display="block" color="text.secondary">Accepts video/audio files</Typography></>}
+                </Box>
 
                 <FormControl size="small" sx={{ minWidth: 120 }}>
                   <InputLabel id="model-label">Model</InputLabel>
@@ -175,21 +267,16 @@ function App() {
                   >
                     {loading ? 'Transcribing…' : 'Generate'}
                   </Button>
-                  <Button
-                    variant="outlined"
-                    onClick={download}
-                    disabled={!srt}
-                  >
-                    Download
-                  </Button>
                 </Stack>
               </Stack>
+
+              {/* {file && <Typography sx={fontStyle}>{file.name}</Typography>} */}
 
               {/* Status */}
               <Typography
                 variant="caption"
                 color="text.secondary"
-                sx={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}
+                sx={fontStyle}
               >
                 Status: {status}{elapsedMs > 0 && <>&nbsp;{(elapsedMs / 1000).toFixed(1)}s</>}
               </Typography>
@@ -208,24 +295,54 @@ function App() {
 
               {/* Preview of SRT file */}
               {srt && (
-                <Box
-                  component="pre"
-                  sx={{
-                    width: '100%',
-                    maxHeight: 420,
-                    overflow: 'auto',
-                    p: 2,
-                    bgcolor: '#0f172a',
-                    color: '#e2e8f0',
-                    textAlign: 'left',
-                    borderRadius: 1.5,
-                    fontSize: 12,
-                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                  }}
-                >
-                  {srt}
-                </Box>
+                <>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outlined"
+                      onClick={download}
+                      disabled={!srt}
+                      startIcon={<FileDownloadIcon sx={{ mr: -0.75 }} />}
+                    >
+                      Download
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      onClick={copySrt}
+                      disabled={!srt}
+                      startIcon={<ContentCopyIcon sx={{ mr: -0.75 }} />}
+                    >
+                      Copy
+                    </Button>
+                  </div>
+                  <Box
+                    component="pre"
+                    sx={{
+                      width: '100%',
+                      maxHeight: 420,
+                      overflow: 'auto',
+                      p: 2,
+                      bgcolor: '#0f172a',
+                      color: '#e2e8f0',
+                      textAlign: 'left',
+                      borderRadius: 1.5,
+                      fontSize: 12,
+                      ...fontStyle,
+                    }}
+                  >
+                    {srt}
+                  </Box>
+                </>
               )}
+              <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={3000}
+                onClose={() => setSnackbarOpen(false)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+              >
+                <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                  {snackbarMsg}
+                </Alert>
+              </Snackbar>
             </Stack>
           </Paper>
         </Container>
