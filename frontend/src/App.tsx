@@ -19,6 +19,7 @@ import {
 } from '@mui/material'
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import InfoIcon from '@mui/icons-material/Info';
 
 const BACKEND_BASE = (import.meta.env.VITE_BACKEND_BASE || 'http://localhost:8000')
 const normalizeBase = (url: string) => url.replace(/\/$/, '')
@@ -168,7 +169,7 @@ function App() {
             {{
               p: { xs: 3, md: 5 },
               borderRadius: 2,
-              backgroundColor: 'rgba(255, 255, 255, 0.75)',
+              backgroundColor: 'rgba(255, 255, 255, 1)',
               backdropFilter: 'blur(8px)',
               boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
             }}>
@@ -346,8 +347,12 @@ function App() {
             </Stack>
           </Paper>
         </Container>
+        <div className="absolute bottom-5 text-sm flex flex-row justify-center items-center">
+          <InfoIcon />
+          <p>API may be offline to reduce AWS EC2 hosting costs. Clone and run locally to try anytime! </p>
+        </div>
       </div>
-    </ThemeProvider>
+    </ThemeProvider >
   )
 }
 
