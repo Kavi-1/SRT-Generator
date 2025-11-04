@@ -219,7 +219,7 @@ function App() {
                     ref={inputRef}
                     style={{ display: 'none' }}
                     type="file"
-                    accept="video/*"
+                    accept="video/*,audio/*"
                     onChange={onFile}
                   />
                   {/* <Typography variant="button">{dragActive ? 'Drop file here' : 'Choose or drop a file'}</Typography> */}
